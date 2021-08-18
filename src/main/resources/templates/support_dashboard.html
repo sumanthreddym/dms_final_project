@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <title>Sumanth Health Insurance Support Dashboard</title>
+  <link href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' rel='stylesheet'>
+  <link href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.css' rel='stylesheet'>
+  <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">Sumanth Health Insurance Support Dashboard</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+      <li class="nav-item active">
+        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">About Us</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link " href="#">Contact Us</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+<div oncontextmenu='return false' class='snippet-body'>
+  <div class="container-fluid">
+    <div class="row justify-content-center">
+      <table class="table table-bordered">
+        <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Name</th>
+          <th scope="col">Email</th>
+          <th scope="col">Phone</th>
+          <th scope="col">Age</th>
+          <th scope="col">Region</th>
+          <th scope="col">Metal Level</th>
+          <th scope="col">People on plan</th>
+          <th scope="col">bmi</th>
+          <th scope="col">isSmoker</th>
+          <th scope="col">Max Price</th>
+          <th scope="col">isSaleComplete</th>
+          <th scope="col">Associate</th>
+          <th scope="col">Recommended Quotes</th>
+        </tr>
+        </thead>
+        <tbody id="quote-container">
+        </tbody>
+      </table>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Recommended Quotes</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div>
+              <p>Please call the customer and recommend the following quotes.</p>
+            </div>
+            <div id="recommended-quote-list-container">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Mark Resolved</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type='text/javascript' src='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js'></script>
+<script type='text/javascript'>$(document).ready(function(){
+  let global_quote_request_results;
+  $.get( 'quote_requests', function( quote_request_results ) {
+    let quote_request_html = "";
+    global_quote_request_results = quote_request_results;
+    console.log(quote_request_results);
+    for (let i = 0; i < quote_request_results.length; i++) {
+      let quote_request_result = quote_request_results[i];
+      console.log(quote_request_result.customerByCustomerSsn.dateOfBirth)
+
+      quote_request_html += `<tr>
+          <th scope="col">${quote_request_result.quoteRequestId}</th>
+          <th scope="col">${quote_request_result.customerByCustomerSsn.firstName}</th>
+          <th scope="col">${quote_request_result.customerByCustomerSsn.email}</th>
+          <th scope="col">${quote_request_result.customerByCustomerSsn.phoneNumber}</th>
+          <th scope="col">25</th>
+          <th scope="col">${quote_request_result.regionByRegionId.regionName}</th>
+          <th scope="col">${quote_request_result.metalLevelByMetalLevelId.metalLevelName}</th>
+          <th scope="col">${quote_request_result.numberOfPeopleOnPlan}</th>
+          <th scope="col">${quote_request_result.bmi}</th>
+          <th scope="col">${quote_request_result.isSmoker}</th>
+          <th scope="col">${quote_request_result.maxPrice}</th>
+          <th scope="col">${quote_request_result.isSaleComplete}</th>
+          <th scope="col">${quote_request_result.associateByAssociateSsn}</th>
+          <th scope="col"><button type="button" class="btn btn-primary recommended-quotes-btn" data-toggle="modal" data-target="#exampleModal" id="${quote_request_result.quoteRequestId}">Click</button></th>
+        </tr>`;
+    }
+    $('#quote-container').html(quote_request_html);
+    $(".recommended-quotes-btn").click(function() {
+      $.get( 'quote_request_product_quotes/'+global_quote_request_results[global_quote_request_results.findIndex((y) => y.quoteRequestId == this.id)].customerByCustomerSsn.customerSsn, function( quote_request_product_quotes ) {
+          console.log("success quote_request_product_quotes");
+        let recommended_quotes_html = "";
+        for (let i = 0; i < quote_request_product_quotes.length; i++) {
+          let recommended_quotes_request_result = quote_request_product_quotes[i];
+          recommended_quotes_html += '<div class="card plan-display-card mb-3">\n' +
+                  '                    <div class="card-body">\n' +
+                  '                      <h5 class="card-title">' + recommended_quotes_request_result.product.planName + '</h5>\n' +
+                  '                      <p class="card-text"><small class="text-muted">Charges: ' + recommended_quotes_request_result.charges + '</small></p>\n' +
+                  '                      <p class="card-text"><small class="text-muted">Is Dental Included? ' + recommended_quotes_request_result.product.isDentalIncluded + '</small></p>\n' +
+                  '                      <p class="card-text"><small class="text-muted"> Is Adult only? ' + recommended_quotes_request_result.product.isAdultChildOnly + '</small></p>\n' +
+                  '                      <p class="card-text"><small class="text-muted"><a href="' + recommended_quotes_request_result.product.networkUrl + '">Newtork Coverage</a></small></p>\n' +
+                  '                      <p class="card-text"><small class="text-muted"><a href="' + recommended_quotes_request_result.product.planBrochureUrl + '">See plan brochure</a></small></p>\n' +
+                  '                      <p class="card-text"><small class="text-muted"><a href="' + recommended_quotes_request_result.product.benefitsSumaryUrl + '">Benefits offered</a></small></p>\n' +
+                  '                      <p class="card-text"><small class="text-muted"><a href="' + recommended_quotes_request_result.product.drugFormulaUrl + '">Drug Formula</a></small></p>\n' +
+                  '                  </div>\n' +
+                  '                  </div>';
+        }
+        $("#recommended-quote-list-container").html(recommended_quotes_html);
+      });
+    });
+  });
+});</script>
+</body>
+</html>
